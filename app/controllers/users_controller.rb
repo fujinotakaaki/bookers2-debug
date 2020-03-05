@@ -1,8 +1,9 @@
 class UsersController < ApplicationController
-	before_action :baria_user, only: [:update]
+	before_action :baria_user, only: [:edit, :update]
 
   def show
   	@user = User.find(params[:id])
+  	# @user = User.find(current_user.id)
   	@books = @user.books
   	@book = Book.new #new bookの新規投稿で必要（保存処理はbookコントローラー側で実施）
   end
@@ -10,6 +11,7 @@ class UsersController < ApplicationController
   def index
   	@users = User.all #一覧表示するためにUserモデルのデータを全て変数に入れて取り出す。
   	@book = Book.new #new bookの新規投稿で必要（保存処理はbookコントローラー側で実施）
+end
 
   def edit
   	@user = User.find(params[:id])
@@ -17,23 +19,27 @@ class UsersController < ApplicationController
 
   def update
   	@user = User.find(params[:id])
-  	if @user.update(user_params)
-  		redirect_to users_path(@user), notice: "successfully updated user!"
+		# logger.debug "create始める"
+  	if @user.update(user_params) then
+			# logger.debug "create成功"
+  		redirect_to user_path(@user), notice: "successfully updated user!"
   	else
-  		render "show"
+			# logger.debug "create失敗"
+			# logger.debug @user.errors.full_messages
+  		render :edit
   	end
   end
 
   private
-  def user_params
-  	params.require(:user).permit(:name, :introduction, :profile_image)
-  end
+	def user_params
+		params.require(:user).permit(:name, :introduction, :profile_image)
+	end
 
-  #url直接防止　メソッドを自己定義してbefore_actionで発動。
-   def baria_user
-  	unless params[:id].to_i == current_user.id
-  		redirect_to user_path(current_user)
-  	end
-   end
+	#url直接防止　メソッドを自己定義してbefore_actionで発動。
+	def baria_user
+		unless params[:id].to_i == current_user.id
+			redirect_to user_path(current_user)
+		end
+	end
 
 end
